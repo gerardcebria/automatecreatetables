@@ -5,10 +5,10 @@ from django.http import HttpResponse
 from django.template import loader
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
+from .models import DataBaseProject
 
 from createtables.forms import tableBaseForm
 
-import logging
 
 def index(request):
     context = {'form' : tableBaseForm()}
@@ -20,11 +20,16 @@ def index(request):
 def ProcessColumns(request):
     if request.method == 'POST':
         form = tableBaseForm(request.POST)
+        context = {}
         if form.is_valid():
-            print(form.cleaned_data['server'])
-            print(form.cleaned_data['source'])
-            print(form.cleaned_data['key_columns'])
-            print(form.cleaned_data['columns'])
-        logging.debug("Log message goes here.")
+            context['server'] = form.cleaned_data['server']
+            context['source'] = form.cleaned_data['source']
+            context['key_columns'] = form.cleaned_data['key_columns'].split(',')
+            context['columns'] = form.cleaned_data['columns'].split(',')
+        
+        db_info = DataBaseProject.objects.filter(auto_increment_id = context['server'])
+        # print(context)
+        for db in db_info:
+            print(db.username)
 
-        return render(request, 'process.html', {})
+        return render(request, 'process.html', context)
